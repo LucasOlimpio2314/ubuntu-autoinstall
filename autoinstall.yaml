@@ -1,41 +1,80 @@
 #cloud-config
 autoinstall:
-    version: 1
-    identity:
-        realname: 'Lucas Barreto'
-        hostname: ubuntu-dev
-        username: barreto
-        password: "$6$abc123$3vT1xD/fjOeU98kAq1kXYC7xi9mgqDO79u6oE2Q8h8PVNp6D1yW.lNkp0u3u3bUURdOsX.KdYz5dtJY0qU48f/"
-    locale: pt_BR.utf8
-    keyboard:
-        layout: br
-    timezone: "America/Sao_Paulo"
+  version: 1
 
-    packages:
-        - git
-        - curl
-        - wget
-        - build-essential
-        - openjdk-17-jdk
-        - gnome-tweaks
-        - docker.io
-        - docker-compose
-        - nodejs
-        - npm
+  identity:
+    realname: "Infra Server"
+    hostname: ubuntu-infra
+    username: infra
+    password: "$2a$12$6KI7zJ1rjidezNnYlz/FJOM92TV1XW1o78K1tGbPluTbl4TF8743C"
 
-    snaps:
-        - name: code
-          channel: stable
-          classic: true
-        - name: google-chrome
-          channel: stable
-        - name: steam
-          channel: stable
-          classic: true
+  locale: pt_BR.utf8
+  keyboard:
+    layout: br
+  timezone: "America/Sao_Paulo"
 
-    codecs:
-        install: true
-    drivers:
-        install: true
-    updates: all
-    shutdown: reboot
+  packages:
+    # Base
+    - git
+    - curl
+    - wget
+    - build-essential
+    - net-tools
+
+    # Segurança
+    - ufw
+    - fail2ban
+
+    # VPN
+    - wireguard
+
+    # Infra (AD / Samba)
+    - samba
+    - smbclient
+    - krb5-config
+    - winbind
+
+    # Desktop leve
+    - xfce4
+    - xfce4-goodies
+
+    # Remote Desktop
+    - xrdp
+
+    # DevOps
+    - docker.io
+    - docker-compose
+
+  snaps: []
+
+  codecs:
+    install: false
+
+  drivers:
+    install: false
+
+  updates: security
+
+  late-commands:
+    # Atualização
+    - curtin in-target -- apt update
+    - curtin in-target -- apt upgrade -y
+
+    # SSH ativo
+    - curtin in-target -- systemctl enable ssh
+
+    # XRDP configurado para XFCE
+    - curtin in-target -- bash -c "echo startxfce4 > /home/infra/.xsession"
+    - curtin in-target -- chown infra:infra /home/infra/.xsession
+
+    # Firewall básico
+    - curtin in-target -- ufw allow 22/tcp
+    - curtin in-target -- ufw allow 3389/tcp
+    - curtin in-target -- ufw allow 51820/udp
+    - curtin in-target -- ufw enable
+
+    # Serviços
+    - curtin in-target -- systemctl enable xrdp
+    - curtin in-target -- systemctl enable docker
+
+  shutdown: reboot
