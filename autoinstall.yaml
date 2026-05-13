@@ -6,7 +6,13 @@ autoinstall:
     realname: "Infra Server"
     hostname: ubuntu-infra
     username: infra
-    password: "1253b37c815c0021d54253391227dd950c6373420a1f8ea916a946670a02eb20c39e78c8a42155d4cda3a2335c57022d5b20e2b715d4e4b01d6d24aba243dd89"
+
+  ssh:
+    install-server: true
+    allow-pw: false
+
+  ssh_authorized_keys:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFMdXF4V4Bqcg5/+eXU7YYc17bxL+xJrhwTQ8akkPTTZ infra@ETCASSINI24
 
   locale: pt_BR.utf8
   keyboard:
@@ -14,67 +20,53 @@ autoinstall:
   timezone: "America/Sao_Paulo"
 
   packages:
-    # Base
     - git
     - curl
     - wget
     - build-essential
     - net-tools
 
-    # Segurança
     - ufw
     - fail2ban
 
-    # VPN
     - wireguard
 
-    # Infra (AD / Samba)
     - samba
     - smbclient
     - krb5-config
     - winbind
 
-    # Desktop leve
     - xfce4
     - xfce4-goodies
+    - dbus-x11
 
-    # Remote Desktop
     - xrdp
 
-    # DevOps
     - docker.io
-    - docker-compose
+    - docker-compose-plugin
 
   snaps: []
-
-  codecs:
-    install: false
-
-  drivers:
-    install: false
 
   updates: security
 
   late-commands:
-    # Atualização
     - curtin in-target -- apt update
     - curtin in-target -- apt upgrade -y
 
-    # SSH ativo
     - curtin in-target -- systemctl enable ssh
 
-    # XRDP configurado para XFCE
+    # XFCE para XRDP
     - curtin in-target -- bash -c "echo startxfce4 > /home/infra/.xsession"
     - curtin in-target -- chown infra:infra /home/infra/.xsession
 
-    # Firewall básico
+    # serviços
+    - curtin in-target -- systemctl enable xrdp
+    - curtin in-target -- systemctl enable docker
+
+    # firewall
     - curtin in-target -- ufw allow 22/tcp
     - curtin in-target -- ufw allow 3389/tcp
     - curtin in-target -- ufw allow 51820/udp
     - curtin in-target -- ufw enable
-
-    # Serviços
-    - curtin in-target -- systemctl enable xrdp
-    - curtin in-target -- systemctl enable docker
 
   shutdown: reboot
