@@ -6,7 +6,7 @@ autoinstall:
     realname: "Infra Server"
     hostname: ubuntu-infra
     username: infra
-    password: "$2a$12$6KI7zJ1rjidezNnYlz/FJOM92TV1XW1o78K1tGbPluTbl4TF8743C"
+    password: "1253b37c815c0021d54253391227dd950c6373420a1f8ea916a946670a02eb20c39e78c8a42155d4cda3a2335c57022d5b20e2b715d4e4b01d6d24aba243dd89"
 
   locale: pt_BR.utf8
   keyboard:
